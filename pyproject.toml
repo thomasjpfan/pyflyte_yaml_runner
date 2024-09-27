@@ -10,3 +10,6 @@ description = "YAML workflow runner for Flytekit"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 dependencies = []
+
+[project.scripts]
+flyte-yaml-runner = "flyte_yaml_runner._bin:hello"

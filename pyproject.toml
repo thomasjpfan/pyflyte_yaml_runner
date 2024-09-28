@@ -3,13 +3,13 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flyte_yaml_runner"
+name = "pyflyte_yaml_runner"
 version = "0.1.0"
 authors = [{ name = "Thomas J. Fan", email = "thomasjpfan@gmail.com" }]
 description = "YAML workflow runner for Flytekit"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
-dependencies = []
+dependencies = ["flytekit>=1.13.5", "rich_click"]
 
 [project.scripts]
-flyte-yaml-runner = "flyte_yaml_runner._bin:hello"
+pyflyte-yaml-runner = "pyflyte_yaml_runner._bin:main"

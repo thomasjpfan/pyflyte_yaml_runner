@@ -1,7 +1,6 @@
 name: simple_python
 workflow_inputs:
   - name: seed
-    type: integer
 
 tasks:
 - name: create_data

@@ -4,11 +4,13 @@ from flytekit.configuration import Config
 
 from ._register import register_script
 from ._workflow import workflow_from_yaml
+import yaml
 
 
 @click.command
 @click.argument("yaml-file", type=click.File("r"))
-def main(yaml_file):
+@click.option("--inputs", type=click.File("r"))
+def main(yaml_file, inputs):
     wf, files_to_include = workflow_from_yaml(yaml_file.read())
 
     remote = FlyteRemote(
@@ -18,5 +20,7 @@ def main(yaml_file):
     )
 
     remote_wf = register_script(remote, wf, include_files=files_to_include)
-    execute = remote.execute(remote_wf, inputs={})
+
+    inputs = yaml.safe_load(inputs.read())
+    execute = remote.execute(remote_wf, inputs=inputs)
     print(remote.generate_console_url(execute))

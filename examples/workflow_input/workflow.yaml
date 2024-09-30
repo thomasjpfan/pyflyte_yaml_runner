@@ -1,0 +1,54 @@
+name: simple_python
+workflow_inputs:
+  - name: seed
+    type: integer
+
+tasks:
+- name: create_data
+  run: >
+    python create_data.py
+    --seed ${{ workflow_inputs.seed }}
+    --output-dir ${{ outputs.data_folder }}
+  container_image: ghcr.io/flyteorg/flytekit:py3.11-1.13.6b2
+  resources:
+    mem: 1Gi
+    cpu: "1"
+  files:
+    - create_data.py
+  outputs:
+    - name: data_folder
+      type: directory
+
+- name: compute_statistics
+  needs: [create_data]
+  run: >
+    python compute_statistics.py
+    --input-dir ${{ create_data.outputs.data_folder }}
+    --output-dir ${{ outputs.result }}
+  container_image: ghcr.io/flyteorg/flytekit:py3.11-1.13.6b2
+  resources:
+    mem: 1Gi
+    cpu: "1"
+  files:
+    - compute_statistics.py
+  outputs:
+    - name: result
+      type: directory
+
+
+- name: post_process
+  needs: [create_data, compute_statistics]
+  run: >
+    python post_process.py
+    --data-dir ${{ create_data.outputs.data_folder }}
+    --results-dir ${{ compute_statistics.outputs.result }}
+    --output-dir ${{ outputs.post }}
+  container_image: ghcr.io/flyteorg/flytekit:py3.11-1.13.6b2
+  resources:
+    mem: 1Gi
+    cpu: "1"
+  files:
+    - post_process.py
+  outputs:
+    - name: post
+      type: directory

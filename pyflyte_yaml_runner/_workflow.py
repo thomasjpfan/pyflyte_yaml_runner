@@ -25,12 +25,14 @@ def workflow_from_yaml(yaml_file) -> Tuple[WorkflowConfig, List[str]]:
     name_to_outputs = {
         task.name: {o.name: o.type for o in task.outputs} for task in wf_config.tasks
     }
+    workflow_inputs_to_type = {
+        wf_input.name: wf_input.type for wf_input in wf_config.workflow_inputs
+    }
+    for name, wf_input_type in workflow_inputs_to_type.items():
+        imperative_wf.add_workflow_input(name, wf_input_type.to_python_type())
 
     # Infer inputs based on needs
     for task in wf_config.tasks:
-        if not task.needs:
-            continue
-
         needs = set(task.needs)
         parameters: List[str] = re.findall(r"\${{\s*(.*?)\s*}}", task.run)
 
@@ -39,6 +41,18 @@ def workflow_from_yaml(yaml_file) -> Tuple[WorkflowConfig, List[str]]:
             if parameter.startswith("outputs."):
                 continue
 
+            elif parameter.startswith("workflow_inputs."):
+                # requires global input
+                _, name = parameter.split(".")
+                task_input = TaskIOConfig(
+                    name=name,
+                    prefix="workflow_inputs",
+                    type=workflow_inputs_to_type[name],
+                )
+                task_inputs.append(task_input)
+                continue
+
+            # Requires output from a task
             parameter_split = parameter.split(".")
 
             needed_task = parameter_split[0]
@@ -66,6 +80,10 @@ def workflow_from_yaml(yaml_file) -> Tuple[WorkflowConfig, List[str]]:
         # has inputs
         inputs_kwargs = {}
         for task_input in task_config.inputs:
+            if task_input.prefix == "workflow_inputs":
+                inputs_kwargs[task_input.name] = imperative_wf.inputs[task_input.name]
+                continue
+
             needed_task_name = task_input.prefix.split(".")[0]
             needed_task_entity = task_entities[needed_task_name]
             inputs_kwargs[task_input.name] = needed_task_entity.outputs[task_input.name]

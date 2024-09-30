@@ -19,6 +19,6 @@ with data_file.open("r") as f:
 
 output = {"mean": mean(data), "std": stdev(data)}
 
-output_file = args.input_dir / "stats.json"
+output_file = args.output_dir / "stats.json"
 with output_file.open("w") as f:
     json.dump(output, f)

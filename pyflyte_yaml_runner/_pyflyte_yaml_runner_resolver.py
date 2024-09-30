@@ -22,19 +22,21 @@ class ResourceConfig(Resources, DataClassYAMLMixin, DataClassJSONMixin):
     pass
 
 
-@dataclass
-class WorkflowInputConfig(DataClassYAMLMixin, DataClassJSONMixin):
-    name: str
-    type: str
-    required: bool
-
-
 class TaskIOTypeConfig(Enum):
     DIRECTORY = "directory"
+    INTEGER = "integer"
 
     def to_python_type(self):
         if self == TaskIOTypeConfig.DIRECTORY:
             return FlyteDirectory
+        elif self == TaskIOTypeConfig.INTEGER:
+            return int
+
+
+@dataclass
+class WorkflowInputConfig(DataClassYAMLMixin, DataClassJSONMixin):
+    name: str
+    type: TaskIOTypeConfig
 
 
 @dataclass
@@ -111,6 +113,10 @@ class YamlTask(PythonInstanceTask[TaskConfig]):
             if task_input.type == TaskIOTypeConfig.DIRECTORY:
                 local_dir = kwargs[task_input.name].download()
                 variables[f"{task_input.prefix}.{task_input.name}"] = local_dir
+            elif task_input.type == TaskIOTypeConfig.INTEGER:
+                variables[f"{task_input.prefix}.{task_input.name}"] = str(
+                    kwargs[task_input.name]
+                )
 
         outputs = []
         for output in self.task_config.outputs:

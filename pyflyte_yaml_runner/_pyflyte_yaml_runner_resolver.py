@@ -81,7 +81,7 @@ class YamlTask(PythonInstanceTask[TaskConfig]):
         self,
         name: str,
         command: str,
-        task_config: TaskConfig = None,
+        task_config: TaskConfig,
         **kwargs,
     ):
         self.command = command

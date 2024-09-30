@@ -1,0 +1,11 @@
+name: simple_task
+
+tasks:
+- name: hello_world
+  run: sh hello_world.sh
+  container_image: "ghcr.io/flyteorg/flytekit:py3.11-1.13.6b2"
+  resources:
+    mem: 1Gi
+    cpu: "1"
+  files:
+    - hello_world.sh

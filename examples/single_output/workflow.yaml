@@ -1,0 +1,17 @@
+name: single_output
+
+tasks:
+- name: create_data
+  run: >
+    python create_data.py
+    --seed 42
+    --output-dir ${{ outputs.data_folder }}
+  container_image: ghcr.io/flyteorg/flytekit:py3.11-1.13.6b2
+  resources:
+    mem: 1Gi
+    cpu: "1"
+  files:
+    - create_data.py
+  outputs:
+    - name: data_folder
+      type: directory

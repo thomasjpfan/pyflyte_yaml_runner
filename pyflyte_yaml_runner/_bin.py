@@ -1,19 +1,15 @@
 import rich_click as click
-from flytekit import Workflow
 from flytekit.remote import FlyteRemote
 from flytekit.configuration import Config
 
-from ._flyte_yaml_runner_resolver import resolver
-from ._run import register_script
+from ._register import register_script
+from ._workflow import workflow_from_yaml
 
 
 @click.command
-def main():
-    task = resolver.get_task()
-
-    imperative_wf = Workflow(name="my_workflow")
-    node = imperative_wf.add_entity(task)
-    imperative_wf.add_workflow_output("wf_output", node.outputs["o0"], python_type=str)
+@click.argument("yaml-file", type=click.File("r"))
+def main(yaml_file):
+    wf, files_to_include = workflow_from_yaml(yaml_file.read())
 
     remote = FlyteRemote(
         config=Config.for_sandbox(),
@@ -21,5 +17,6 @@ def main():
         default_project="flytesnacks",
     )
 
-    remote_wf = register_script(remote, imperative_wf)
-    remote.execute(remote_wf, inputs={})
+    remote_wf = register_script(remote, wf, include_files=files_to_include)
+    execute = remote.execute(remote_wf, inputs={})
+    print(remote.generate_console_url(execute))

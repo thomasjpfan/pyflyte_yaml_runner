@@ -17,7 +17,7 @@ from flytekit.remote.entities import FlyteWorkflow, FlyteTask
 from flytekit.core.base_task import PythonTask
 from flytekit.remote.remote import _get_git_repo_url
 
-from . import _flyte_yaml_runner_resolver
+from . import _pyflyte_yaml_runner_resolver
 
 
 def register_script(
@@ -38,11 +38,14 @@ def register_script(
     if include_files is None:
         include_files = []
 
-    resolver_file = _flyte_yaml_runner_resolver.__file__
+    resolver_file = _pyflyte_yaml_runner_resolver.__file__
     with tempfile.TemporaryDirectory() as tmp_dir:
         archive_fname = Path(os.path.join(tmp_dir, "script_mode.tar.gz"))
         with tarfile.open(archive_fname, "w:gz") as tar:
             tar.add(resolver_file, arcname=os.path.basename(resolver_file))
+
+            for file in include_files:
+                tar.add(file)
 
         # TODO: Add everything we need into script_mode.tar.gz
         md5_bytes, upload_native_url = remote.upload_file(

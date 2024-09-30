@@ -21,6 +21,10 @@ def main(yaml_file, inputs):
 
     remote_wf = register_script(remote, wf, include_files=files_to_include)
 
-    inputs = yaml.safe_load(inputs.read())
-    execute = remote.execute(remote_wf, inputs=inputs)
+    if inputs is not None:
+        wf_inputs = yaml.safe_load(inputs.read())
+    else:
+        wf_inputs = {}
+
+    execute = remote.execute(remote_wf, inputs=wf_inputs)
     print(remote.generate_console_url(execute))
